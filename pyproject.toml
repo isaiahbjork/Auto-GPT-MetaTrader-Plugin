@@ -3,12 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "auto_gpt_plugin_template"
-version = "0.0.2"
+name = "auto_gpt_metatrader"
+version = "0.0.1"
 authors = [
-  { name="Torantulino", email="34168009+BillSchumacher@users.noreply.github.com" },
+  { name="isaiahbjork", email="34168009+BillSchumacher@users.noreply.github.com" },
 ]
-description = "The template plugin for Auto-GPT."
+description = "The MetaTrader plugin for Auto-GPT."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -19,8 +19,8 @@ classifiers = [
 dependencies = ["abstract-singleton"]
 
 [project.urls]
-"Homepage" = "https://github.com/Torantulino/Auto-GPT"
-"Bug Tracker" = "https://github.com/Torantulino/Auto-GPT"
+"Homepage" = "https://github.com/isaiahbjork/Auto-GPT-MetaTrader"
+"Bug Tracker" = "https://github.com/isaiahbjork/Auto-GPT-MetaTrader"
 
 [tool.black]
 line-length = 88
