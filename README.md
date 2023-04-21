@@ -1,2 +1,6 @@
-# (Coming Soon) Auto-GPT-Plugin-Template
-A starting point for developing your own plug-in for Auto-GPT
+# (Coming Soon) Auto-GPT-MetaTrader
+Give Auto-GPT Trading Capaiblites using MetaTrader.
+- Place Trades
+- Manage Current Trades
+- Trade Forex, Crypto, Indicies, Stocks, Metals
+- Connect Your to your own Broker using MetaAPI
