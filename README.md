@@ -1,4 +1,4 @@
-# (Coming Soon) Auto-GPT-MetaTrader
+# Auto-GPT MetaTrader Plugin 📈
 Give Auto-GPT Trading Capaiblites using MetaTrader.
 - Place Trades
 - Manage Current Trades
