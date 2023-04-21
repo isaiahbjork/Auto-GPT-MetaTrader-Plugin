@@ -1,10 +1,14 @@
 """This is a plugin to use Auto-GPT with MetaTrader."""
 import abc
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, TypedDict
-
+import requests
+import os
 from abstract_singleton import AbstractSingleton, Singleton
 
 PromptGenerator = TypeVar("PromptGenerator")
+
+account_id = os.getenv('META_API_ACCOUNT_ID')
+token = os.getenv("META_API_TOKEN")
 
 
 class Message(TypedDict):
@@ -48,16 +52,16 @@ class AutoGPTPluginTemplate(AbstractSingleton, metaclass=Singleton):
 
     @abc.abstractmethod
     def post_prompt(self, prompt: PromptGenerator) -> PromptGenerator:
-        """This method is called just after the generate_prompt is called,
-            but actually before the prompt is generated.
-
-        Args:
-            prompt (PromptGenerator): The prompt generator.
-
-        Returns:
-            PromptGenerator: The prompt generator.
-        """
-        pass
+        prompt.add_command(
+            "Fetch Candlesticks",
+            "fetch_candlesticks",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>"
+            },
+            self.fetch_candlesticks
+        )
+        return prompt
 
     @abc.abstractmethod
     def can_handle_on_planning(self) -> bool:
@@ -243,3 +247,16 @@ class AutoGPTPluginTemplate(AbstractSingleton, metaclass=Singleton):
             str: The resulting response.
         """
         pass
+
+    def fetch_candlesticks(self, symbol: str, timeframe: str) -> Optional[Dict[str, Any]]:
+        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=15"
+        headers = {
+            "auth-token": token,
+            "Content-Type": "application/json"
+        }
+        response = requests.get(url, headers=headers)
+        if response:
+            candlesticks = response.json()
+            return candlesticks
+        else:
+            return None
