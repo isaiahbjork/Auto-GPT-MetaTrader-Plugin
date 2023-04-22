@@ -6,6 +6,8 @@ from auto_gpt_plugin_template import AutoGPTPluginTemplate
 import requests
 import os
 import numpy as np
+import ta
+import candlesticks
 
 PromptGenerator = TypeVar("PromptGenerator")
 
@@ -66,7 +68,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 "signal": "<signal>"
             },
             self.place_trade
-        ), 
+        ),
         prompt.add_command(
             "Money Flow Index",
             "money_flow_index",
@@ -75,26 +77,112 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 "timeframe": "<timeframe>"
             },
             self.money_flow_index
-        ), 
+        ),
         prompt.add_command(
-            "Calculate RSI",
-            "calculate_rsi",
+            "RSI",
+            "rsi",
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
             },
-            self.calculate_rsi
-        ), 
+            self.rsi
+        ),
         prompt.add_command(
-            "Get Volume",
-            "get_volume",
+            "Volume",
+            "volume",
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
             },
-            self.get_volume
-        )
+            self.volume
+        ),
+        prompt.add_command(
+            "Simple Moving Average",
+            "sma",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
+            },
+            self.sma
+        ),
+        prompt.add_command(
+            "Exponential Moving Average",
+            "ema",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
+            },
+            self.ema
+        ),
+        prompt.add_command(
+            "MACD",
+            "macd",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period_fast": "<period_fast>",
+                "period_slow": "<period_slow>",
+                "period_signal": "<period_signal>",
+            },
+            self.macd
+        ),
+        prompt.add_command(
+            "Moving Average of Oscillator (OsMA)",
+            "osma",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period_fast": "<period_fast>",
+                "period_slow": "<period_slow>",
+                "period_signal": "<period_signal>",
+            },
+            self.osma
+        ),
+        prompt.add_command(
+            "Weighted Moving Average",
+            "wma",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
 
+            },
+            self.wma
+        ),
+        prompt.add_command(
+            "Moving Average Envelope",
+            "mae",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
+                "percentage": "<period>",
+            },
+            self.mae
+        ),
+        prompt.add_command(
+            "Bollinger Bands",
+            "bollinger_bands",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
+                "deviation": "<deviation>",
+            },
+            self.bollinger_bands
+        ), prompt.add_command(
+            "Fibonacci Retracement",
+            "fib_retracements",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "high": "<high>",
+                "low": "<low>",
+            },
+            self.fib_retracements
+        ),
         return prompt
 
     def can_handle_post_prompt(self) -> bool:
@@ -399,42 +487,8 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Indicators
 
     def money_flow_index(self, symbol: str, timeframe: str) -> Optional[float]:
-        symbol = symbol.replace('/', '')
-        symbol = symbol.upper()
-        timeframe_map = {
-            "1 minute": "1m",
-            "1 min": "1m",
-            "1min": "1m",
-            "5 minutes": "5m",
-            "5 min": "5m",
-            "5min": "5m",
-            "15 minutes": "15m",
-            "15 min": "15m",
-            "15min": "15m",
-            "30 minutes": "30m",
-            "30 min": "30m",
-            "30min": "30m",
-            "1 hour": "1h",
-            "4 hours": "4h",
-            "1 day": "1d",
-            "1 week": "1w",
-            "1 month": "1m"
-        }
-        # Check if the user input matches any of the keys in the dictionary
-        if timeframe in timeframe_map:
-            timeframe = timeframe_map[timeframe]
-        else:
-            # Assume that the user input is already in the correct format
-            pass
-
-        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=15"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        response = requests.get(url, headers=headers)
-        if response:
-            candlesticks = response.json()
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if candlesticks:
             typical_prices = [(candlestick['high'] + candlestick['low'] +
                                candlestick['close']) / 3 for candlestick in candlesticks]
 
@@ -454,96 +508,100 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return 'Failed to get candlesticks.'
 
-    def get_volume(self, symbol: str, timeframe: str) -> Optional[float]:
-        symbol = symbol.replace('/', '')
-        symbol = symbol.upper()
-        timeframe_map = {
-            "1 minute": "1m",
-            "1 min": "1m",
-            "1min": "1m",
-            "5 minutes": "5m",
-            "5 min": "5m",
-            "5min": "5m",
-            "15 minutes": "15m",
-            "15 min": "15m",
-            "15min": "15m",
-            "30 minutes": "30m",
-            "30 min": "30m",
-            "30min": "30m",
-            "1 hour": "1h",
-            "4 hours": "4h",
-            "1 day": "1d",
-            "1 week": "1w",
-            "1 month": "1m"
-        }
-        # Check if the user input matches any of the keys in the dictionary
-        if timeframe in timeframe_map:
-            timeframe = timeframe_map[timeframe]
-        else:
-            # Assume that the user input is already in the correct format
-            pass
-
-        response = self.fetch_candlesticks(symbol, timeframe)
-        if response:
-            candlesticks = response["candles"]
+    def volume(self, symbol: str, timeframe: str) -> Optional[float]:
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if candlesticks:
+            candlesticks = candlesticks["candles"]
             volumes = [candlestick['tickVolume'] for candlestick in candlesticks]
             return np.sum(volumes[-14:])
         else:
             return f'Failed to get candlesticks'
 
-    def calculate_rsi(self, symbol: str, timeframe: str) -> Optional[float]:
-        symbol = symbol.replace('/', '')
-        symbol = symbol.upper()
-        timeframe_map = {
-            "1 minute": "1m",
-            "1 min": "1m",
-            "1min": "1m",
-            "5 minutes": "5m",
-            "5 min": "5m",
-            "5min": "5m",
-            "15 minutes": "15m",
-            "15 min": "15m",
-            "15min": "15m",
-            "30 minutes": "30m",
-            "30 min": "30m",
-            "30min": "30m",
-            "1 hour": "1h",
-            "4 hours": "4h",
-            "1 day": "1d",
-            "1 week": "1w",
-            "1 month": "1m"
-        }
-        # Check if the user input matches any of the keys in the dictionary
-        if timeframe in timeframe_map:
-            timeframe = timeframe_map[timeframe]
-        else:
-            # Assume that the user input is already in the correct format
-            pass
-
+    def rsi(self, symbol: str, timeframe: str) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = self.fetch_candlesticks(symbol, timeframe)
+        candlesticks = candlesticks.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
 
-        # Calculate the price changes
-        price_changes = [candlesticks[i]['close'] - candlesticks[i-1]['close']
-                         for i in range(1, len(candlesticks))]
-
-        # Separate the price changes into gains and losses
-        gains = [price_change if price_change >
-                 0 else 0 for price_change in price_changes]
-        losses = [-price_change if price_change <
-                  0 else 0 for price_change in price_changes]
-
-        # Calculate the average gain and average loss over the specified period of time
-        avg_gain = np.mean(gains[-14:])
-        avg_loss = np.mean(losses[-14:])
-
-        # Calculate the relative strength (RS) and RSI
-        if avg_loss == 0:
-            rs = np.inf
-        else:
-            rs = avg_gain / avg_loss
-        rsi = 100 - (100 / (1 + rs))
+        rsi = ta.momentum.RSIIndicator(candlesticks['close'], window=14)
 
         return rsi
+
+    # Simple Moving Average (SMA)
+    def sma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
+        # Get the tick volume data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        return ta.trend.sma_indicator(candlesticks['close'], window=float(period))
+
+    # Exponential Moving Average (EMA)
+    def ema(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
+        # Get the tick volume data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        return ta.trend.ema_indicator(candlesticks['close'], window=float(period))
+
+    # Weighted Moving Average (WMA)
+    def wma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
+        # Get the tick volume data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        return ta.trend.wma_indicator(candlesticks['close'], window=float(period))
+
+    # Moving Average Convergence Divergence (MACD)
+    def macd(self, symbol: str, timeframe: str, period_fast: str = 12, period_slow: str = 26, period_signal: str = 9) -> Optional[float]:
+        # Get the tick volume data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        return ta.trend.macd(candlesticks['close'], window_fast=float(period_fast), window_slow=float(period_slow), window_signal=float(period_signal))
+
+    # Moving Average Envelope (MAE)
+    def mae(self, symbol: str, timeframe: str, period: str = 20, percentage: str = 0.025) -> Optional[float]:
+        # Get the tick volume data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        return ta.volatility.bollinger_mavg(candlesticks['close'], window=float(period), percentage=float(percentage))
+
+    # Moving Average of Oscillator (OsMA)
+    def osma(self, symbol: str, timeframe: str, period_fast: int = 12, period_slow: int = 26, period_signal: int = 9) -> Optional[float]:
+        # Get the candlestick data
+        candlesticks = candlesticks.fetch(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+        # Calculate MACD
+        macd_line, signal_line, histogram = ta.trend.macd(candlesticks['close'],
+                                                          window_fast=period_fast,
+                                                          window_slow=period_slow,
+                                                          window_signal=period_signal)
+
+        # Calculate OsMA
+        osma = histogram - signal_line
+
+        return osma
+
+    def bollinger_bands(self, symbol: str, timeframe: str, period: int = 20, deviations: int = 2) -> Optional[Tuple[List[float], List[float], List[float]]]:
+        candlesticks = self.fetch_candlesticks(symbol, timeframe)
+        if candlesticks:
+            candlesticks = candlesticks["candles"]
+            closes = [candlestick['close'] for candlestick in candlesticks]
+            sma = ta.SMA(np.array(closes), timeperiod=period)
+            std = ta.STDDEV(np.array(closes), timeperiod=period)
+            upper_band = sma + (deviations * std)
+            lower_band = sma - (deviations * std)
+            return upper_band.tolist(), sma.tolist(), lower_band.tolist()
+        else:
+            return None
+
+    def fib_retracements(self, high: float, low: float) -> List[float]:
+        levels = [0.236, 0.382, 0.5, 0.618, 0.786]
+        diff = high - low
+        retracements = []
+        for level in levels:
+            retracements.append(high - level * diff)
+        return retracements
