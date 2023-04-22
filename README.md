@@ -90,10 +90,13 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
      2. Goal 2: `Terminate`
 
 2. **Run Auto-GPT:**
-   Launch Auto-GPT, which should use the email plugin and it should load the candlestick data.
+   Launch Auto-GPT, which should use the MetaTrader plugin and it should load the candlestick data.
 
 
 3. **Sample response:**
 <img width="1063" alt="auto-gpt-email-plugin" src="https://i.ibb.co/qjt9QTw/fetch-candlesticks.png">
 
-
+## 📉 Indicators:
+-  **Relative Strength Index (RSI)**
+-  **Volume**
+-  **Money Fund Index (MFI)**
