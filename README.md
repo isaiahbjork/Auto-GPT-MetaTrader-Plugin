@@ -1,5 +1,5 @@
 # Auto-GPT MetaTrader Plugin 📈
-The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect their MetaTrader 4 or 5 trading platform to Auto-GPT.
+The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect their MetaTrader 4 or 5 trading account to Auto-GPT.
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/isaiahbjork/Auto-GPT-MetaTrader-Plugin?style=social)](https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin/stargazers)
 
@@ -100,7 +100,7 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
 3. **Sample response:**
 <img width="1063" alt="auto-gpt-email-plugin" src="https://i.ibb.co/qjt9QTw/fetch-candlesticks.png">
 
-## 📉 Indicators:
+## 📉 Indicators (In-Progress):
 -  **Relative Strength Index (RSI)**
 -  **Volume**
 -  **Moving Averages (SMA, EMA, WMA, MAE, OsMA, MACD)**
