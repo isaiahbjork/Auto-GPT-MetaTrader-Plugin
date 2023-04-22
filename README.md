@@ -4,6 +4,7 @@ The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect
 [![GitHub Repo stars](https://img.shields.io/github/stars/isaiahbjork/Auto-GPT-MetaTrader-Plugin?style=social)](https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin/stargazers)
 
 
+
 ## 💡 Key Features:
 - 💰 **Place Trades**: .
 
@@ -89,6 +90,7 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
    Launch Auto-GPT, which should use the email plugin to send an email to my-email-plugin-test@trash-mail.com.
 
 
-3. **Sample response content:**
-   
+3. **Sample response:**
+<img width="1063" alt="auto-gpt-email-plugin" src="https://i.ibb.co/qjt9QTw/fetch-candlesticks.png">
+
 
