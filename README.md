@@ -16,7 +16,7 @@ Follow these steps to configure the Auto-GPT MetaTrader Plugin:
 Clone this repository and navigate to the `Auto-GPT-MetaTrader-Plugin` folder in your terminal:
 
 ```bash
-git clone https://github.com/riensen/Auto-GPT-MetaTrader-Plugin.git
+git clone https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin.git
 ```
 
 ### 2. Install required dependencies
