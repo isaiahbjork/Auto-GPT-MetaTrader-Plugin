@@ -48,7 +48,7 @@ Duplicate the `.env.template` file and rename the copy to `.env` inside the `/Au
 ### 8. Edit the `.env` file
 Open the `.env` file in a text editor. Note: Files starting with a dot might be hidden by your operating system.
 
-### 9. Add email configuration settings
+### 9. Add MetaTrader configuration settings
 Append the following configuration settings to the end of the file:
 
 ```ini
@@ -58,11 +58,9 @@ Append the following configuration settings to the end of the file:
 META_API_ACCOUNT_ID=
 META_API_TOKEN=
 ```
-
-- Set `META_API_ACCOUNT_ID` to your [MetaAPI](https://metaapi.cloud) account ID. 
+- Create a [MetaAPI](https://metaapi.cloud) account and connect to your broker.
+- Set `META_API_ACCOUNT_ID` to your MetaAPI account ID. 
 - Set `META_API_TOKEN` to your MetaAPI token.
-
-- Create
 
 ### 10. Allowlist Plugin
 In your `.env` search for `ALLOWLISTED_PLUGINS` and add this Plugin:
@@ -99,4 +97,7 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
 ## 📉 Indicators:
 -  **Relative Strength Index (RSI)**
 -  **Volume**
+-  **Moving Averages (SMA, EMA, WMA, MAE, OsMA, MACD)**
+-  **Fibonacci Retracement**
+-  **Bollinger Bands**
 -  **Money Fund Index (MFI)**
