@@ -24,7 +24,7 @@ tz = pytz.timezone('America/New_York')
 now = datetime.now(tz)
 
 
-def place_trade(account_id, symbol, signal, volume):
+def place_trade(symbol, signal, volume):
     signal = signal.upper()
     signal = signal.replace(".", "").strip()
     print(signal)
@@ -312,9 +312,9 @@ def run():
                     print(f"Unexpected error: {e}")
                 # Place trade based on signal
                 if signal == "BUY":
-                    place_trade(account_id, pair, "buy", 0.01)
+                    place_trade(pair, "buy", 0.01)
                 else:
-                    place_trade(account_id, pair, "sell", 0.01)
+                    place_trade(pair, "sell", 0.01)
     except:
         print("Error: rerunning...")
         run()
