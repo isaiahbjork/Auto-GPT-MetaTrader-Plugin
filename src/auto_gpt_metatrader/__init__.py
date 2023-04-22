@@ -247,7 +247,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             candlesticks = response.json()
             return candlesticks
         else:
-            return None
+            return 'Failed to get candlesticks.'
 
     def close_all_trades():
         url2 = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
@@ -278,9 +278,9 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 responses.append(f"Failed to close trade for {position['symbol']}")
 
         if responses:
-            return True, responses
+            return responses
         else:
-            return False, []
+            return f'No trades to close.'
 
     def get_positions() -> Optional[Dict[str, Any]]:
         url2 = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
@@ -316,23 +316,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             'symbol': symbol,
             'actionType': 'ORDER_TYPE_BUY' if signal == 'BUY' else 'ORDER_TYPE_SELL',
             'volume': volume,
-            'comment': 'Auto-GPT MetaTrader Plugin',
-            'trailingStopLoss': {
-                'distance': {
-                    'distance': 40,
-                    'units': 'RELATIVE_POINTS'
-                },
-                'threshold': {
-                    'thresholds': [
-                        {
-                            'threshold': 0,
-                            'stopLoss': 0
-                        }
-                    ],
-                    'units': 'ABSOLUTE_PRICE',
-                    'stopPriceBase': 'CURRENT_PRICE'
-                }
-            }
+            'comment': 'Auto-GPT MetaTrader Plugin'
         }
         headers = {
             "auth-token": token,
@@ -341,6 +325,6 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         url = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
         response = requests.post(url, headers=headers, json=trade_data)
         if response:
-            print(f"Successfully placed {signal} trade for {symbol}")
+            return f"Successfully placed {signal} trade for {symbol}"
         else:
-            print('Failed to place trade')
+            return 'Failed to place trade'
