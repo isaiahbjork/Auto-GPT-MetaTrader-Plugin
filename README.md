@@ -99,4 +99,7 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
 ## 📉 Indicators:
 -  **Relative Strength Index (RSI)**
 -  **Volume**
+-  **Moving Averages (SMA, EMA, WMA, MAE, OsMA, MACD)**
+-  **Fibonacci Retracement**
+-  **Bollinger Bands**
 -  **Money Fund Index (MFI)**
