@@ -271,7 +271,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return 'Failed to get candlesticks.'
 
-    def close_all_trades():
+    def close_all_trades(self) -> Optional[Dict[str, Any]]:
         url2 = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
         headers = {
             "auth-token": token,
@@ -304,7 +304,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return f'No trades to close.'
 
-    def get_positions() -> Optional[Dict[str, Any]]:
+    def get_positions(self) -> Optional[Dict[str, Any]]:
         url2 = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
         headers = {
             "auth-token": token,
@@ -317,7 +317,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return f'Failed to get positions'
 
-    def get_account_information() -> Optional[Dict[str, Any]]:
+    def get_account_information(self) -> Optional[Dict[str, Any]]:
         url = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/account-information"
         headers = {
             "auth-token": token,
@@ -330,14 +330,14 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return f'Failed to get account information'
 
-    def place_trade(self, symbol: str, signal: str, volume: float) -> None:
+    def place_trade(self, symbol: str, volume: str, signal: str) -> None:
         signal = signal.upper()
-        signal = signal.replace(".", "").strip()
+        symbol = symbol.upper()
         # Place the new trade
         trade_data = {
             'symbol': symbol,
             'actionType': 'ORDER_TYPE_BUY' if signal == 'BUY' else 'ORDER_TYPE_SELL',
-            'volume': volume,
+            'volume': float(volume),
             'comment': 'Auto-GPT MetaTrader Plugin'
         }
         headers = {
@@ -349,4 +349,5 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         if response:
             return f"Successfully placed {signal} trade for {symbol}"
         else:
-            return 'Failed to place trade'
+            response = response.json()
+            return response
