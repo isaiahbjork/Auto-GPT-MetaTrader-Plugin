@@ -347,7 +347,8 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         url = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
         response = requests.post(url, headers=headers, json=trade_data)
         if response:
-            return f"Successfully placed {signal} trade for {symbol}"
+            response = response.json()
+            return response
         else:
             response = response.json()
             return response
