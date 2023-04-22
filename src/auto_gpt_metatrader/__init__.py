@@ -7,7 +7,6 @@ import requests
 import os
 import numpy as np
 import ta
-from candlesticks import fetch
 
 PromptGenerator = TypeVar("PromptGenerator")
 
@@ -388,7 +387,47 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             return candlesticks
         else:
             return 'Failed to get candlesticks.'
+    def fetch(self, symbol, timeframe):
+        symbol = symbol.replace('/', '')
+        symbol = symbol.upper()
+        timeframe_map = {
+            "1 minute": "1m",
+            "1 min": "1m",
+            "1min": "1m",
+            "5 minutes": "5m",
+            "5 min": "5m",
+            "5min": "5m",
+            "15 minutes": "15m",
+            "15 min": "15m",
+            "15min": "15m",
+            "30 minutes": "30m",
+            "30 min": "30m",
+            "30min": "30m",
+            "1 hour": "1h",
+            "4 hours": "4h",
+            "1 day": "1d",
+            "1 week": "1w",
+            "1 month": "1m"
+        }
+        # Check if the user input matches any of the keys in the dictionary
+        if timeframe in timeframe_map:
+            timeframe = timeframe_map[timeframe]
+        else:
+            # Assume that the user input is already in the correct format
+            pass
 
+        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=1000"
+        headers = {
+            "auth-token": token,
+            "Content-Type": "application/json"
+        }
+        response = requests.get(url, headers=headers)
+        if response:
+            candlesticks = response.json()
+            return candlesticks
+        else:
+            return 'Failed to get candlesticks.'
+        
     def close_trade(self, position_id: str) -> None:
         trade_data = {
             'actionType': 'POSITION_CLOSE_ID',
@@ -487,7 +526,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Indicators
 
     def money_flow_index(self, symbol: str, timeframe: str) -> Optional[float]:
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             typical_prices = [(candlestick['high'] + candlestick['low'] +
                                candlestick['close']) / 3 for candlestick in candlesticks]
@@ -509,7 +548,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             return 'Failed to get candlesticks.'
 
     def volume(self, symbol: str, timeframe: str) -> Optional[float]:
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             candlesticks = candlesticks["candles"]
             volumes = [candlestick['tickVolume'] for candlestick in candlesticks]
@@ -519,7 +558,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
 
     def rsi(self, symbol: str, timeframe: str) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
 
@@ -530,7 +569,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Simple Moving Average (SMA)
     def sma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
         return ta.trend.sma_indicator(candlesticks['close'], window=float(period))
@@ -538,7 +577,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Exponential Moving Average (EMA)
     def ema(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
         return ta.trend.ema_indicator(candlesticks['close'], window=float(period))
@@ -546,7 +585,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Weighted Moving Average (WMA)
     def wma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
         return ta.trend.wma_indicator(candlesticks['close'], window=float(period))
@@ -554,7 +593,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Moving Average Convergence Divergence (MACD)
     def macd(self, symbol: str, timeframe: str, period_fast: str = 12, period_slow: str = 26, period_signal: str = 9) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
         return ta.trend.macd(candlesticks['close'], window_fast=float(period_fast), window_slow=float(period_slow), window_signal=float(period_signal))
@@ -562,7 +601,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Moving Average Envelope (MAE)
     def mae(self, symbol: str, timeframe: str, period: str = 20, percentage: str = 0.025) -> Optional[float]:
         # Get the tick volume data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
         return ta.volatility.bollinger_mavg(candlesticks['close'], window=float(period), percentage=float(percentage))
@@ -570,7 +609,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     # Moving Average of Oscillator (OsMA)
     def osma(self, symbol: str, timeframe: str, period_fast: int = 12, period_slow: int = 26, period_signal: int = 9) -> Optional[float]:
         # Get the candlestick data
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
 
@@ -586,7 +625,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         return osma
 
     def bollinger_bands(self, symbol: str, timeframe: str, period: int = 20, deviations: int = 2) -> Optional[Tuple[List[float], List[float], List[float]]]:
-        candlesticks = fetch(symbol, timeframe)
+        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             candlesticks = candlesticks["candles"]
             closes = [candlestick['close'] for candlestick in candlesticks]
