@@ -42,6 +42,28 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             "close_all_trades",
             {},
             self.close_all_trades
+        ),
+        prompt.add_command(
+            "Get Account Information",
+            "get_account_information",
+            {},
+            self.get_account_information
+        ),
+        prompt.add_command(
+            "Get Positions",
+            "get_positions",
+            {},
+            self.get_positions
+        ),
+        prompt.add_command(
+            "Place Trade",
+            "place_trade",
+            {
+                "symbol": "<symbol>",
+                "volume": "<volume>",
+                "signal": "<signal>"
+            },
+            self.place_trade
         )
         return prompt
 
