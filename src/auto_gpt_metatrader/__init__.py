@@ -3,7 +3,7 @@ import abc
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, TypedDict
 import requests
 import os
-from abstract_singleton import AbstractSingleton, Singleton
+from auto_gpt_plugin_template import AutoGPTPluginTemplate
 
 PromptGenerator = TypeVar("PromptGenerator")
 
@@ -16,7 +16,7 @@ class Message(TypedDict):
     content: str
 
 
-class AutoGPTPluginTemplate(AbstractSingleton, metaclass=Singleton):
+class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     """
     This is a plugin to use Auto-GPT with MetaTrader.
     """
@@ -48,7 +48,7 @@ class AutoGPTPluginTemplate(AbstractSingleton, metaclass=Singleton):
 
         Returns:
             bool: True if the plugin can handle the post_prompt method."""
-        return False
+        return True
 
     @abc.abstractmethod
     def post_prompt(self, prompt: PromptGenerator) -> PromptGenerator:
