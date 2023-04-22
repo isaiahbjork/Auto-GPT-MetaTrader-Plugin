@@ -9,3 +9,4 @@ build
 twine
 requests
 auto-gpt-plugin-template
+numpy

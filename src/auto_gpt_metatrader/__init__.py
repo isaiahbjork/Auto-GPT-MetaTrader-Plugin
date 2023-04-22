@@ -1,9 +1,11 @@
 """This is a plugin to use Auto-GPT with MetaTrader."""
-import abc
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, TypedDict
+from auto_gpt_plugin_template import AutoGPTPluginTemplate
+
+# MetaTrader
 import requests
 import os
-from auto_gpt_plugin_template import AutoGPTPluginTemplate
+import numpy as np
 
 PromptGenerator = TypeVar("PromptGenerator")
 
@@ -64,7 +66,35 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 "signal": "<signal>"
             },
             self.place_trade
+        ), 
+        prompt.add_command(
+            "Money Flow Index",
+            "money_flow_index",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>"
+            },
+            self.money_flow_index
+        ), 
+        prompt.add_command(
+            "Calculate RSI",
+            "calculate_rsi",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+            },
+            self.calculate_rsi
+        ), 
+        prompt.add_command(
+            "Get Volume",
+            "get_volume",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+            },
+            self.get_volume
         )
+
         return prompt
 
     def can_handle_post_prompt(self) -> bool:
@@ -271,14 +301,27 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             return 'Failed to get candlesticks.'
 
+    def close_trade(self, position_id: str) -> None:
+        trade_data = {
+            'actionType': 'POSITION_CLOSE_ID',
+            'positionId': position_id
+        }
+        headers = {
+            "auth-token": token,
+            "Content-Type": "application/json"
+        }
+        url = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
+        response = requests.post(
+            url, headers=headers, json=trade_data)
+        response = response.json()
+        return response
+
     def close_all_trades(self) -> Optional[Dict[str, Any]]:
         url2 = f"https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
         headers = {
             "auth-token": token,
             "Content-Type": "application/json"
         }
-        global positions
-
         positions = requests.get(url2, headers=headers)
         positions = positions.json()
         responses = []
@@ -352,3 +395,155 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             response = response.json()
             return response
+
+    # Indicators
+
+    def money_flow_index(self, symbol: str, timeframe: str) -> Optional[float]:
+        symbol = symbol.replace('/', '')
+        symbol = symbol.upper()
+        timeframe_map = {
+            "1 minute": "1m",
+            "1 min": "1m",
+            "1min": "1m",
+            "5 minutes": "5m",
+            "5 min": "5m",
+            "5min": "5m",
+            "15 minutes": "15m",
+            "15 min": "15m",
+            "15min": "15m",
+            "30 minutes": "30m",
+            "30 min": "30m",
+            "30min": "30m",
+            "1 hour": "1h",
+            "4 hours": "4h",
+            "1 day": "1d",
+            "1 week": "1w",
+            "1 month": "1m"
+        }
+        # Check if the user input matches any of the keys in the dictionary
+        if timeframe in timeframe_map:
+            timeframe = timeframe_map[timeframe]
+        else:
+            # Assume that the user input is already in the correct format
+            pass
+
+        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=15"
+        headers = {
+            "auth-token": token,
+            "Content-Type": "application/json"
+        }
+        response = requests.get(url, headers=headers)
+        if response:
+            candlesticks = response.json()
+            typical_prices = [(candlestick['high'] + candlestick['low'] +
+                               candlestick['close']) / 3 for candlestick in candlesticks]
+
+            positive_money_flow = [typical_prices[i] if typical_prices[i] >
+                                   typical_prices[i-1] else 0 for i in range(1, len(typical_prices))]
+            negative_money_flow = [typical_prices[i] if typical_prices[i] <
+                                   typical_prices[i-1] else 0 for i in range(1, len(typical_prices))]
+            positive_money_flow.insert(0, 0)
+            negative_money_flow.insert(0, 0)
+
+            positive_money_flow_sum = np.sum(positive_money_flow[-14:])
+            negative_money_flow_sum = np.sum(negative_money_flow[-14:])
+            money_ratio = positive_money_flow_sum / negative_money_flow_sum
+            mfi = 100 - (100 / (1 + money_ratio))
+
+            return mfi
+        else:
+            return 'Failed to get candlesticks.'
+
+    def get_volume(self, symbol: str, timeframe: str) -> Optional[float]:
+        symbol = symbol.replace('/', '')
+        symbol = symbol.upper()
+        timeframe_map = {
+            "1 minute": "1m",
+            "1 min": "1m",
+            "1min": "1m",
+            "5 minutes": "5m",
+            "5 min": "5m",
+            "5min": "5m",
+            "15 minutes": "15m",
+            "15 min": "15m",
+            "15min": "15m",
+            "30 minutes": "30m",
+            "30 min": "30m",
+            "30min": "30m",
+            "1 hour": "1h",
+            "4 hours": "4h",
+            "1 day": "1d",
+            "1 week": "1w",
+            "1 month": "1m"
+        }
+        # Check if the user input matches any of the keys in the dictionary
+        if timeframe in timeframe_map:
+            timeframe = timeframe_map[timeframe]
+        else:
+            # Assume that the user input is already in the correct format
+            pass
+
+        response = self.fetch_candlesticks(symbol, timeframe)
+        if response:
+            candlesticks = response["candles"]
+            volumes = [candlestick['tickVolume'] for candlestick in candlesticks]
+            return np.sum(volumes[-14:])
+        else:
+            return f'Failed to get candlesticks'
+
+    def calculate_rsi(self, symbol: str, timeframe: str) -> Optional[float]:
+        symbol = symbol.replace('/', '')
+        symbol = symbol.upper()
+        timeframe_map = {
+            "1 minute": "1m",
+            "1 min": "1m",
+            "1min": "1m",
+            "5 minutes": "5m",
+            "5 min": "5m",
+            "5min": "5m",
+            "15 minutes": "15m",
+            "15 min": "15m",
+            "15min": "15m",
+            "30 minutes": "30m",
+            "30 min": "30m",
+            "30min": "30m",
+            "1 hour": "1h",
+            "4 hours": "4h",
+            "1 day": "1d",
+            "1 week": "1w",
+            "1 month": "1m"
+        }
+        # Check if the user input matches any of the keys in the dictionary
+        if timeframe in timeframe_map:
+            timeframe = timeframe_map[timeframe]
+        else:
+            # Assume that the user input is already in the correct format
+            pass
+
+        # Get the tick volume data
+        candlesticks = self.fetch_candlesticks(symbol, timeframe)
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+        # Calculate the price changes
+        price_changes = [candlesticks[i]['close'] - candlesticks[i-1]['close']
+                         for i in range(1, len(candlesticks))]
+
+        # Separate the price changes into gains and losses
+        gains = [price_change if price_change >
+                 0 else 0 for price_change in price_changes]
+        losses = [-price_change if price_change <
+                  0 else 0 for price_change in price_changes]
+
+        # Calculate the average gain and average loss over the specified period of time
+        avg_gain = np.mean(gains[-14:])
+        avg_loss = np.mean(losses[-14:])
+
+        # Calculate the relative strength (RS) and RSI
+        if avg_loss == 0:
+            rs = np.inf
+        else:
+            rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+
+        return rsi
