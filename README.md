@@ -36,6 +36,12 @@ Compress the `Auto-GPT-MetaTrader-Plugin` folder or [download the repository as 
 ### 4. Install Auto-GPT
 If you haven't already, clone the [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) repository, follow its installation instructions, and navigate to the `Auto-GPT` folder.
 
+You might have to run this in the Auto-GPT file if you get an error saying "No Moudle Found".
+
+```bash
+pip install ta
+```
+
 ### 5. Copy the Zip file into the Auto-GPT Plugin folder
 Transfer the zip file from step 3 into the `plugins` subfolder within the `Auto-GPT` repo.
 
