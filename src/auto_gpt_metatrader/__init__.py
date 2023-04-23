@@ -387,6 +387,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             return candlesticks
         else:
             return 'Failed to get candlesticks.'
+
     def fetch(self, symbol, timeframe):
         symbol = symbol.replace('/', '')
         symbol = symbol.upper()
@@ -427,7 +428,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             return candlesticks
         else:
             return 'Failed to get candlesticks.'
-        
+
     def close_trade(self, position_id: str) -> None:
         trade_data = {
             'actionType': 'POSITION_CLOSE_ID',
@@ -561,9 +562,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-
-        rsi = ta.momentum.RSIIndicator(candlesticks['close'], window=14)
-
+        rsi = ta.momentum.RSIIndicator(int(candlesticks['close']), window=14)
         return rsi
 
     # Simple Moving Average (SMA)
@@ -572,7 +571,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-        return ta.trend.sma_indicator(candlesticks['close'], window=float(period))
+        return ta.trend.sma_indicator(int(candlesticks['close']), window=float(period))
 
     # Exponential Moving Average (EMA)
     def ema(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
@@ -580,7 +579,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-        return ta.trend.ema_indicator(candlesticks['close'], window=float(period))
+        return ta.trend.ema_indicator(int(candlesticks['close']), window=float(period))
 
     # Weighted Moving Average (WMA)
     def wma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
@@ -588,7 +587,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-        return ta.trend.wma_indicator(candlesticks['close'], window=float(period))
+        return ta.trend.wma_indicator(int(candlesticks['close']), window=float(period))
 
     # Moving Average Convergence Divergence (MACD)
     def macd(self, symbol: str, timeframe: str, period_fast: str = 12, period_slow: str = 26, period_signal: str = 9) -> Optional[float]:
@@ -596,7 +595,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-        return ta.trend.macd(candlesticks['close'], window_fast=float(period_fast), window_slow=float(period_slow), window_signal=float(period_signal))
+        return ta.trend.macd(int(candlesticks['close']), window_fast=float(period_fast), window_slow=float(period_slow), window_signal=float(period_signal))
 
     # Moving Average Envelope (MAE)
     def mae(self, symbol: str, timeframe: str, period: str = 20, percentage: str = 0.025) -> Optional[float]:
@@ -604,7 +603,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         candlesticks = self.fetch(symbol, timeframe)
         if not candlesticks:
             return f'Failed to get candlesticks'
-        return ta.volatility.bollinger_mavg(candlesticks['close'], window=float(period), percentage=float(percentage))
+        return ta.volatility.bollinger_mavg(int(candlesticks['close']), window=float(period), percentage=float(percentage))
 
     # Moving Average of Oscillator (OsMA)
     def osma(self, symbol: str, timeframe: str, period_fast: int = 12, period_slow: int = 26, period_signal: int = 9) -> Optional[float]:
@@ -614,7 +613,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             return f'Failed to get candlesticks'
 
         # Calculate MACD
-        macd_line, signal_line, histogram = ta.trend.macd(candlesticks['close'],
+        macd_line, signal_line, histogram = ta.trend.macd(int(candlesticks['close']),
                                                           window_fast=period_fast,
                                                           window_slow=period_slow,
                                                           window_signal=period_signal)
