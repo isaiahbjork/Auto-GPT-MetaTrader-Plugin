@@ -66,12 +66,20 @@ Append the following configuration settings to the end of the file:
 META_API_ACCOUNT_ID=
 META_API_TOKEN=
 LUNAR_CRUSH_API_KEY=
+MY_FX_BOOK_USERNAME=
+MY_FX_BOOK_PASSWORD=
+FCS_API_KEY=
 ```
 - Create a [MetaAPI](https://metaapi.cloud) account and connect to your broker.
 - MT5 accounts will need to have a paid account to access candlestick data.
+- Create a [MyFxBook](https://myfxbook.com) account and connect to your trading accounts.
+- Create a [FCS API](https://fcsapi.com) account.
 - Set `META_API_ACCOUNT_ID` to your MetaAPI account ID. 
 - Set `META_API_TOKEN` to your MetaAPI token.
 - Set `LUNAR_CRUSH_API_KEY` to your LunarCrush API Key.
+- Set `MY_FX_BOOK_USERNAME` to your MyFxBook username/email.
+- Set `MY_FX_BOOK_PASSWORD` to your MyFxBook password.
+- Set `FCS_API_KEY` to your FCS API KEY.
 ### 10. Allowlist Plugin
 In your `.env` search for `ALLOWLISTED_PLUGINS` and add this Plugin:
 
@@ -82,6 +90,8 @@ In your `.env` search for `ALLOWLISTED_PLUGINS` and add this Plugin:
 #ALLOWLISTED_PLUGINS - Sets the listed plugins that are allowed (Example: plugin1,plugin2,plugin3)
 ALLOWLISTED_PLUGINS=AutoGPTMetaTraderPlugin
 ```
+### 11. Review Available Commands
+You can review the available commands [here](/src/auto_gpt_metatrader/commands.txt).
 
 ## 🧪 Test the Auto-GPT MetaTrader Plugin
 

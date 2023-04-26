@@ -1,0 +1,27 @@
+Trade Commands
+
+fetch_candlesticks
+close_all_trades
+get_account_information
+get_positions
+place_trade
+
+Technical Analysis
+
+rsi
+money_flow_index
+volume
+sma
+ema
+macd
+osma
+wma
+mae
+bollinger_bands
+fib_retracements
+
+Fundamentals
+
+get_stock_of_the_day
+
+
