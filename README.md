@@ -11,6 +11,7 @@ The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect
 - ⛔️ **Close Trade**
 - ❌ **Close All Trades**
 - 🕯 **Candlestick Data**
+- 📈 **Stock of The Day**
 - 📂 **Red Folder News (in-progress)**
 
 ## 🔧 Installation
