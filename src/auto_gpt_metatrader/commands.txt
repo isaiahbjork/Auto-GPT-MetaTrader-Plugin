@@ -23,5 +23,4 @@ fib_retracements
 Fundamentals
 
 get_stock_of_the_day
-
-
+get_important_forex_news

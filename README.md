@@ -12,7 +12,7 @@ The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect
 - ❌ **Close All Trades**
 - 🕯 **Candlestick Data**
 - 📈 **Stock of The Day**
-- 📂 **Red Folder News (in-progress)**
+- 📂 **Red Folder News**
 
 ## 🔧 Installation
 
@@ -41,7 +41,7 @@ If you haven't already, clone the [Auto-GPT](https://github.com/Significant-Grav
 You might have to run this in the Auto-GPT file if you get an error saying "No Moudle Found".
 
 ```bash
-pip install ta
+pip install ta myfxbook
 ```
 
 ### 5. Copy the Zip file into the Auto-GPT Plugin folder

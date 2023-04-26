@@ -7,8 +7,7 @@ import requests
 import os
 import numpy as np
 import ta
-from myfxbook import myfxbook
-
+import myfxbook
 PromptGenerator = TypeVar("PromptGenerator")
 
 account_id = os.getenv('META_API_ACCOUNT_ID')
@@ -16,6 +15,8 @@ token = os.getenv("META_API_TOKEN")
 lunarcrush_api = os.getenv('LUNAR_CRUSH_API_KEY')
 myfxbook_username = os.getenv('MY_FX_BOOK_USERNAME')
 myfxbook_password = os.getenv('MY_FX_BOOK_PASSWORD')
+fcs_api = os.getenv('FCS_API_KEY')
+
 
 class Message(TypedDict):
     role: str
@@ -191,6 +192,12 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             "get_stock_of_the_day",
             {},
             self.get_stock_of_the_day
+        ),
+        prompt.add_command(
+            "Get Important Forex News",
+            "get_important_forex_news",
+            {},
+            self.get_important_forex_news
         ),
         return prompt
 
@@ -686,3 +693,25 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         else:
             raise Exception(
                 f"Failed to get Stock of the day from LunarCrush; status code {response.status_code}")
+
+    # FCS API
+    def get_important_forex_news(self) -> str:
+        url = 'https://fcsapi.com/api-v3/forex/economy_cal'
+        params = {
+            'access_key': fcs_api
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()  # Raise an exception if the response status is not OK (2xx)
+
+            json_data = response.json()
+            important_events = []
+            for item in json_data['response']:
+                if item['importance'] == '2':
+                    important_events.append(item)
+            return important_events
+
+        except requests.exceptions.RequestException as e:
+            print('Error fetching data from FCS API:', e)
+            return None
