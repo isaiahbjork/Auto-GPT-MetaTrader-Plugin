@@ -7,13 +7,15 @@ import requests
 import os
 import numpy as np
 import ta
+from myfxbook import myfxbook
 
 PromptGenerator = TypeVar("PromptGenerator")
 
 account_id = os.getenv('META_API_ACCOUNT_ID')
 token = os.getenv("META_API_TOKEN")
 lunarcrush_api = os.getenv('LUNAR_CRUSH_API_KEY')
-
+myfxbook_username = os.getenv('MY_FX_BOOK_USERNAME')
+myfxbook_password = os.getenv('MY_FX_BOOK_PASSWORD')
 
 class Message(TypedDict):
     role: str
