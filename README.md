@@ -64,11 +64,13 @@ Append the following configuration settings to the end of the file:
 ################################################################################
 META_API_ACCOUNT_ID=
 META_API_TOKEN=
+LUNAR_CRUSH_API_KEY=
 ```
 - Create a [MetaAPI](https://metaapi.cloud) account and connect to your broker.
+- MT5 accounts will need to have a paid account to access candlestick data.
 - Set `META_API_ACCOUNT_ID` to your MetaAPI account ID. 
 - Set `META_API_TOKEN` to your MetaAPI token.
-
+- Set `LUNAR_CRUSH_API_KEY` to your LunarCrush API Key.
 ### 10. Allowlist Plugin
 In your `.env` search for `ALLOWLISTED_PLUGINS` and add this Plugin:
 
