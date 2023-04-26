@@ -73,7 +73,7 @@ FCS_API_KEY=
 - Create a [MetaAPI](https://metaapi.cloud) account and connect to your broker.
 - MT5 accounts will need to have a paid account to access candlestick data.
 - Create a [MyFxBook](https://myfxbook.com) account and connect to your trading accounts.
-- Create a [FCS API](https://fcsapi.com) account.
+- Create a [FCS API](https://fcsapi.com) account. (500 calls/mo for free)
 - Set `META_API_ACCOUNT_ID` to your MetaAPI account ID. 
 - Set `META_API_TOKEN` to your MetaAPI token.
 - Set `LUNAR_CRUSH_API_KEY` to your LunarCrush API Key.
