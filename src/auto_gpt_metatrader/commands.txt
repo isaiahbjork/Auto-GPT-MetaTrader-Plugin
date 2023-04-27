@@ -20,7 +20,7 @@ adx
 adi
 fib_retracements
 stochastic_oscillator
-
+tsi
 Fundamentals
 
 get_stock_of_the_day

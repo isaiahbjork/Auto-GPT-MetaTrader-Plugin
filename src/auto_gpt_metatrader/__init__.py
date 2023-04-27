@@ -10,7 +10,7 @@ import ta
 import myfxbook
 import pandas as pd
 from ta.utils import dropna
-from ta.momentum import rsi, stoch_signal
+from ta.momentum import rsi, stoch_signal, tsi
 from ta.trend import sma_indicator, ema_indicator, wma_indicator, macd_signal, adx
 from ta.volume import acc_dist_index, money_flow_index
 PromptGenerator = TypeVar("PromptGenerator")
@@ -197,6 +197,17 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 "smooth_period": "<smooth_period>",
             },
             self.stochastic_oscillator
+        ),
+        prompt.add_command(
+            "True Strength Index",
+            "tsi",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period_slow": "<period_slow>",
+                "period_fast": "<period_fast>",
+            },
+            self.tsi
         ),
         prompt.add_command(
             "Stock Of The Day",
@@ -727,6 +738,23 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
 
         if not candlesticks:
             return f'Failed to get candlesticks'
+
+    # True Strength Index
+    def tsi(self, symbol: str, timeframe: str, slow_period: int = 25, fast_period: int = 13) -> Optional[float]:
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            tsi_value = tsi(
+                df['close'], window_slow=int(slow_period), window_fast=int(fast_period))
+            tsi_value = pd.DataFrame(tsi_value)
+            tsiv = tsi_value.dropna()
+            return tsiv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+        
     # LunarCrush
 
     def get_stock_of_the_day(self) -> float:
