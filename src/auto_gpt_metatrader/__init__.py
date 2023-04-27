@@ -8,6 +8,11 @@ import os
 import numpy as np
 import ta
 import myfxbook
+import pandas as pd
+from ta.utils import dropna
+from ta.momentum import rsi
+from ta.trend import sma_indicator, ema_indicator, wma_indicator, macd_signal, adx
+from ta.volume import acc_dist_index
 PromptGenerator = TypeVar("PromptGenerator")
 
 account_id = os.getenv('META_API_ACCOUNT_ID')
@@ -51,6 +56,14 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             self.close_all_trades
         ),
         prompt.add_command(
+            "Close A Trade",
+            "close_trade",
+            {
+                "position_id": "<position_id>"
+            },
+            self.close_trade
+        ),
+        prompt.add_command(
             "Get Account Information",
             "get_account_information",
             {},
@@ -87,6 +100,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
+                "period": "<period>"
             },
             self.rsi
         ),
@@ -125,23 +139,20 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
-                "period_fast": "<period_fast>",
-                "period_slow": "<period_slow>",
-                "period_signal": "<period_signal>",
+                "fast_period": "<fast_period>",
+                "slow_period": "<slow_period>",
+                "signal_period": "<signal_period>",
             },
             self.macd
         ),
         prompt.add_command(
-            "Moving Average of Oscillator (OsMA)",
-            "osma",
+            "Accumulation/Distribution Index",
+            "adi",
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
-                "period_fast": "<period_fast>",
-                "period_slow": "<period_slow>",
-                "period_signal": "<period_signal>",
             },
-            self.osma
+            self.adi
         ),
         prompt.add_command(
             "Weighted Moving Average",
@@ -155,26 +166,14 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             self.wma
         ),
         prompt.add_command(
-            "Moving Average Envelope",
-            "mae",
+            "Average Directional Movement Index",
+            "adx",
             {
                 "symbol": "<symbol>",
                 "timeframe": "<timeframe>",
                 "period": "<period>",
-                "percentage": "<period>",
             },
-            self.mae
-        ),
-        prompt.add_command(
-            "Bollinger Bands",
-            "bollinger_bands",
-            {
-                "symbol": "<symbol>",
-                "timeframe": "<timeframe>",
-                "period": "<period>",
-                "deviation": "<deviation>",
-            },
-            self.bollinger_bands
+            self.adx
         ),
         prompt.add_command(
             "Fibonacci Retracement",
@@ -451,7 +450,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             # Assume that the user input is already in the correct format
             pass
 
-        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=1000"
+        url = f"https://mt-market-data-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=100"
         headers = {
             "auth-token": token,
             "Content-Type": "application/json"
@@ -585,90 +584,120 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
     def volume(self, symbol: str, timeframe: str) -> Optional[float]:
         candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
-            candlesticks = candlesticks["candles"]
-            volumes = [candlestick['tickVolume'] for candlestick in candlesticks]
+            volumes = [float(candlestick['tickVolume']) for candlestick in candlesticks]
             return np.sum(volumes[-14:])
         else:
             return f'Failed to get candlesticks'
 
-    def rsi(self, symbol: str, timeframe: str) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        rsi = ta.momentum.RSIIndicator(int(candlesticks['close']), window=14)
-        return rsi
-
-    # Simple Moving Average (SMA)
-    def sma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        return ta.trend.sma_indicator(int(candlesticks['close']), window=float(period))
-
-    # Exponential Moving Average (EMA)
-    def ema(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        return ta.trend.ema_indicator(int(candlesticks['close']), window=float(period))
-
-    # Weighted Moving Average (WMA)
-    def wma(self, symbol: str, timeframe: str, period: str) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        return ta.trend.wma_indicator(int(candlesticks['close']), window=float(period))
-
-    # Moving Average Convergence Divergence (MACD)
-    def macd(self, symbol: str, timeframe: str, period_fast: str = 12, period_slow: str = 26, period_signal: str = 9) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        return ta.trend.macd(int(candlesticks['close']), window_fast=float(period_fast), window_slow=float(period_slow), window_signal=float(period_signal))
-
-    # Moving Average Envelope (MAE)
-    def mae(self, symbol: str, timeframe: str, period: str = 20, percentage: str = 0.025) -> Optional[float]:
-        # Get the tick volume data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        return ta.volatility.bollinger_mavg(int(candlesticks['close']), window=float(period), percentage=float(percentage))
-
-    # Moving Average of Oscillator (OsMA)
-    def osma(self, symbol: str, timeframe: str, period_fast: int = 12, period_slow: int = 26, period_signal: int = 9) -> Optional[float]:
-        # Get the candlestick data
-        candlesticks = self.fetch(symbol, timeframe)
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-        # Calculate MACD
-        macd_line, signal_line, histogram = ta.trend.macd(int(candlesticks['close']),
-                                                          window_fast=period_fast,
-                                                          window_slow=period_slow,
-                                                          window_signal=period_signal)
-
-        # Calculate OsMA
-        osma = histogram - signal_line
-
-        return osma
-
-    def bollinger_bands(self, symbol: str, timeframe: str, period: int = 20, deviations: int = 2) -> Optional[Tuple[List[float], List[float], List[float]]]:
+    def rsi(self, symbol: str, timeframe: str, period: float = 14) -> Optional[float]:
         candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
-            candlesticks = candlesticks["candles"]
-            closes = [candlestick['close'] for candlestick in candlesticks]
-            sma = ta.SMA(np.array(closes), timeperiod=period)
-            std = ta.STDDEV(np.array(closes), timeperiod=period)
-            upper_band = sma + (deviations * std)
-            lower_band = sma - (deviations * std)
-            return upper_band.tolist(), sma.tolist(), lower_band.tolist()
-        else:
-            return None
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            rsi_value = rsi(df['close'], window=int(period))
+            rsi_value = pd.DataFrame(rsi_value)
+            rsiv = rsi_value.dropna()
+            return rsiv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Simple Moving Average (SMA)
+
+    def sma(self, symbol: str, timeframe: str, period: int = 12) -> Optional[float]:
+        # Get the candlesticks data
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            sma_value = sma_indicator(df['close'], window=int(period))
+            sma_value = pd.DataFrame(sma_value)
+            smav = sma_value.dropna()
+            return smav.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Exponential Moving Average (EMA)
+    def ema(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
+        # Get the candlesticks data
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            ema_value = ema_indicator(df['close'], window=int(period))
+            ema_value = pd.DataFrame(ema_value)
+            emav = ema_value.dropna()
+            return emav.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Weighted Moving Average (WMA)
+    def wma(self, symbol: str, timeframe: str, period: int = 9) -> Optional[float]:
+        # Get the candlesticks data
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            wma_value = wma_indicator(df['close'], window=int(period))
+            wma_value = pd.DataFrame(wma_value)
+            wmav = wma_value.dropna()
+            return wmav.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Moving Average Convergence Divergence (MACD)
+    def macd(self, symbol: str, timeframe: str, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Optional[Tuple[float, float, float]]:
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            macd_value = macd_signal(df['close'], window_slow=int(
+                slow_period), window_fast=int(fast_period), window_sign=int(signal_period))
+            macd_value = pd.DataFrame(macd_value)
+            macdv = macd_value.dropna()
+            return macdv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Average Directional Movement Index (ADX)
+    def adx(self, symbol: str, timeframe: str, period: str = 20) -> Optional[float]:
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            adx_value = adx(df['high'], df['low'], df['close'], window=int(period))
+            adx_value = pd.DataFrame(adx_value)
+            adxv = adx_value.dropna()
+            return adxv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
+
+    # Accumulation/Distribution Index (ADI)
+    def adi(self, symbol: str, timeframe: str) -> Optional[float]:
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            adi_value = acc_dist_index(
+                df['high'], df['low'], df['close'], df['tickVolume'])
+            adi_value = pd.DataFrame(adi_value)
+            adiv = adi_value.dropna()
+            return adiv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
 
     def fib_retracements(self, high: float, low: float) -> List[float]:
         levels = [0.236, 0.382, 0.5, 0.618, 0.786]

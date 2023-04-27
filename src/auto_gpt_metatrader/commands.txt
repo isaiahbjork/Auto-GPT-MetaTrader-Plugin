@@ -1,6 +1,7 @@
 Trade Commands
 
 fetch_candlesticks
+close_trade
 close_all_trades
 get_account_information
 get_positions
@@ -14,10 +15,9 @@ volume
 sma
 ema
 macd
-osma
 wma
-mae
-bollinger_bands
+adx
+adi
 fib_retracements
 
 Fundamentals
