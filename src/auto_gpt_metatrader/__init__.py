@@ -10,9 +10,9 @@ import ta
 import myfxbook
 import pandas as pd
 from ta.utils import dropna
-from ta.momentum import rsi
+from ta.momentum import rsi, stoch_signal
 from ta.trend import sma_indicator, ema_indicator, wma_indicator, macd_signal, adx
-from ta.volume import acc_dist_index
+from ta.volume import acc_dist_index, money_flow_index
 PromptGenerator = TypeVar("PromptGenerator")
 
 account_id = os.getenv('META_API_ACCOUNT_ID')
@@ -90,7 +90,8 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             "money_flow_index",
             {
                 "symbol": "<symbol>",
-                "timeframe": "<timeframe>"
+                "timeframe": "<timeframe>",
+                "period": "<period>"
             },
             self.money_flow_index
         ),
@@ -185,6 +186,17 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
                 "low": "<low>",
             },
             self.fib_retracements
+        ),
+        prompt.add_command(
+            "Stochastic Oscillator",
+            "stochastic_oscillator",
+            {
+                "symbol": "<symbol>",
+                "timeframe": "<timeframe>",
+                "period": "<period>",
+                "smooth_period": "<smooth_period>",
+            },
+            self.stochastic_oscillator
         ),
         prompt.add_command(
             "Stock Of The Day",
@@ -559,27 +571,20 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
 
     # Indicators
 
-    def money_flow_index(self, symbol: str, timeframe: str) -> Optional[float]:
+    def money_flow_index(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
         candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
-            typical_prices = [(candlestick['high'] + candlestick['low'] +
-                               candlestick['close']) / 3 for candlestick in candlesticks]
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            mfi_value = money_flow_index(
+                df['high'], df['low'], df['close'], df['tickVolume'], window=int(period))
+            mfi_value = pd.DataFrame(mfi_value)
+            mfiv = mfi_value.dropna()
+            return mfiv.to_json()
 
-            positive_money_flow = [typical_prices[i] if typical_prices[i] >
-                                   typical_prices[i-1] else 0 for i in range(1, len(typical_prices))]
-            negative_money_flow = [typical_prices[i] if typical_prices[i] <
-                                   typical_prices[i-1] else 0 for i in range(1, len(typical_prices))]
-            positive_money_flow.insert(0, 0)
-            negative_money_flow.insert(0, 0)
-
-            positive_money_flow_sum = np.sum(positive_money_flow[-14:])
-            negative_money_flow_sum = np.sum(negative_money_flow[-14:])
-            money_ratio = positive_money_flow_sum / negative_money_flow_sum
-            mfi = 100 - (100 / (1 + money_ratio))
-
-            return mfi
-        else:
-            return 'Failed to get candlesticks.'
+        if not candlesticks:
+            return f'Failed to get candlesticks'
 
     def volume(self, symbol: str, timeframe: str) -> Optional[float]:
         candlesticks = self.fetch(symbol, timeframe)
@@ -707,7 +712,23 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             retracements.append(high - level * diff)
         return retracements
 
+     # Stochastic Oscillator
+    def stochastic_oscillator(self, symbol: str, timeframe: str, period: int = 14, smooth_period: int = 3) -> Optional[float]:
+        candlesticks = self.fetch(symbol, timeframe)
+        if candlesticks:
+            df = pd.DataFrame(candlesticks)
+            # Clean NaN values
+            df = dropna(df)
+            stoch_value = stoch_signal(
+                df['high'], df['low'], df['close'], window=int(period), smooth_window=int(smooth_period))
+            stoch_value = pd.DataFrame(stoch_value)
+            stochv = stoch_value.dropna()
+            return stochv.to_json()
+
+        if not candlesticks:
+            return f'Failed to get candlesticks'
     # LunarCrush
+
     def get_stock_of_the_day(self) -> float:
 
         url = "https://lunarcrush.com/api3/stockoftheday"

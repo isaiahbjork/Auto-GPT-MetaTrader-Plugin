@@ -19,6 +19,7 @@ wma
 adx
 adi
 fib_retracements
+stochastic_oscillator
 
 Fundamentals
 
