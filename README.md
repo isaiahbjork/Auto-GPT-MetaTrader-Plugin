@@ -64,6 +64,7 @@ Append the following configuration settings to the end of the file:
 ################################################################################
 META_API_ACCOUNT_ID=
 META_API_TOKEN=
+META_API_REGION=
 LUNAR_CRUSH_API_KEY=
 MY_FX_BOOK_USERNAME=
 MY_FX_BOOK_PASSWORD=
@@ -75,6 +76,7 @@ FCS_API_KEY=
 - Create a [FCS API](https://fcsapi.com) account. (500 calls/mo for free)
 - Set `META_API_ACCOUNT_ID` to your MetaAPI account ID. 
 - Set `META_API_TOKEN` to your MetaAPI token.
+- Set `META_API_REGION` to your MetaAPI region (new-york, london, singapore).
 - Set `LUNAR_CRUSH_API_KEY` to your LunarCrush API Key.
 - Set `MY_FX_BOOK_USERNAME` to your MyFxBook username/email.
 - Set `MY_FX_BOOK_PASSWORD` to your MyFxBook password.
