@@ -11,3 +11,4 @@ requests
 auto-gpt-plugin-template
 numpy
 myfxbook
+Candlestick
