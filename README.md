@@ -3,6 +3,13 @@ The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/isaiahbjork/Auto-GPT-MetaTrader-Plugin?style=social)](https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin/stargazers)
 
+<h2 align="center"> 💖 Help Support Auto-GPT Plugin's Development 💖</h2>
+<p align="center">
+If you can spare a coffee, you can help to cover the costs of developing Auto-GPT Plugins and help to push the boundaries of fully autonomous AI!
+Your support is greatly appreciated. Development of this free, open-source project is made possible by all the <a href="https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/isaiahbjork">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/isaiahbjork">click here</a>.
+
+Crypto Donations: 0x2457e8746EFa5894b70aE06a1b391474bc928B05
+</p>
 
 
 ## 💡 Key Features:
@@ -92,7 +99,7 @@ In your `.env` search for `ALLOWLISTED_PLUGINS` and add this Plugin:
 ALLOWLISTED_PLUGINS=AutoGPTMetaTraderPlugin
 ```
 ### 11. Review Available Commands
-You can review the available commands [here](/src/auto_gpt_metatrader/commands.txt).
+You can review the available commands and indicators [here](/src/auto_gpt_metatrader/commands.txt).
 
 ## 🧪 Test the Auto-GPT MetaTrader Plugin
 
@@ -122,3 +129,4 @@ Experience the plugin's capabilities by testing it for placing trades, managing 
 -  **Fibonacci Retracement**
 -  **Bollinger Bands**
 -  **Money Fund Index (MFI)**
+
