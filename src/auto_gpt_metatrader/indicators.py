@@ -3,9 +3,9 @@ import pandas as pd
 import requests
 import os
 from ta.utils import dropna
-from ta.momentum import rsi, stoch_signal, tsi
-from ta.trend import sma_indicator, ema_indicator, wma_indicator, macd_signal, adx
-from ta.volume import acc_dist_index, money_flow_index
+from ta.momentum import RSIIndicator, StochasticOscillator, TSIIndicator
+from ta.trend import SMAIndicator, EMAIndicator, WMAIndicator, MACD, ADXIndicator
+from ta.volume import AccDistIndexIndicator, MFIIndicator
 
 account_id = os.getenv('META_API_ACCOUNT_ID')
 token = os.getenv("META_API_TOKEN")
@@ -73,19 +73,13 @@ class Indicators():
 
     def money_flow_index(candlesticks, period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['high', 'low', 'close', 'tickVolume'])
             # Clean NaN values
             df = dropna(df)
-            mfiv = []
-            mfi_value = money_flow_index(
-                df['high'], df['low'], df['close'], df['tickVolume'], window=int(period))
-            mfi_value = pd.DataFrame(mfi_value)
-            mfi_value = mfi_value.dropna()
-            for v in mfi_value:
-                mfiv.append(v)
-            return mfiv
-
-        if not candlesticks:
+            
+            mfi = MFIIndicator(df['high'], df['low'], df['close'], volume=df['tickVolume'], window=int(20))
+            return f'Current MFI Value: {mfi.money_flow_index().iloc()[-1]}'
+        else:
             return f'Failed to get candlesticks'
 
     def volume(candlesticks):
@@ -97,15 +91,12 @@ class Indicators():
 
     def rsi(candlesticks, period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['close'])
             # Clean NaN values
             df = dropna(df)
-            rsiv = []
-            rsi_value = rsi(df['close'], window=int(period))
-            rsi_value = rsi_value.dropna()
-            for v in rsi_value:
-                rsiv.append(v)
-            return rsiv
+            rsi_indicator = RSIIndicator(df['close'], window=float(period))
+            current_rsi = rsi_indicator.rsi().iloc[-1]
+            return f'Current RSI Value: {current_rsi}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -115,15 +106,10 @@ class Indicators():
     def sma(candlesticks, period):
         # Get the candlesticks data
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
+            df = pd.DataFrame(candlesticks, columns=['close'])
             df = dropna(df)
-            smav = []
-            sma_value = sma_indicator(df['close'], window=int(period))
-            sma_value = sma_value.dropna()
-            for v in sma_value:
-                smav.append(v)
-            return smav
+            sma = SMAIndicator(df['close'], window=float(period))
+            return f'Current Simple Moving Average Value: {sma.sma_indicator().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -132,15 +118,10 @@ class Indicators():
     def ema(candlesticks, period):
         # Get the candlesticks data
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
+            df = pd.DataFrame(candlesticks, columns=['close'])
             df = dropna(df)
-            emav = []
-            ema_value = ema_indicator(df['close'], window=int(period))
-            ema_value = ema_value.dropna()
-            for v in ema_value:
-                emav.append(v)
-            return emav
+            ema = EMAIndicator(df['close'], window=float(period))
+            return f'Current Exponential Moving Average Value: {ema.ema_indicator().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -149,15 +130,10 @@ class Indicators():
     def wma(candlesticks, period):
         # Get the candlesticks data
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
+            df = pd.DataFrame(candlesticks, columns=['close'])
             df = dropna(df)
-            wmav = []
-            wma_value = wma_indicator(df['close'], window=int(period))
-            wma_value = wma_value.dropna()
-            for v in wma_value:
-                wmav.append(v)
-            return wmav
+            wma = WMAIndicator(df['close'], window=float(period))
+            return f'Current Weighted Moving Average Value: {wma.wma_indicator().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -165,32 +141,30 @@ class Indicators():
     # Moving Average Convergence Divergence (MACD)
     def macd(candlesticks, fast_period, slow_period, signal_period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
+            df = pd.DataFrame(candlesticks, columns=['close'])
+    # Clean NaN values
             df = dropna(df)
-            macdv = []
-            macd_value = macd_signal(df['close'], window_slow=int(
-                slow_period), window_fast=int(fast_period), window_sign=int(signal_period))
-            macd_value = macd_value.dropna()
-            for v in macd_value:
-                macdv.append(v)
-            return macdv
-
+            # Calculate the RSI values
+            macd = MACD(df['close'], window_slow=int(
+                        12), window_fast=int(26), window_sign=int(9))
+            signal_line = macd.macd_signal().iloc()[-1]
+            macd_line = macd.macd().iloc()[-1]
+            macd_diff = macd.macd_diff().iloc()[-1]
+            macd_values = {"macd_line": macd_line, 'macd_diff': macd_diff, 'signal_line': signal_line}
+            return f'Current MACD Values: {macd_values}'
+        
         if not candlesticks:
             return f'Failed to get candlesticks'
 
     # Average Directional Movement Index (ADX)
     def adx(candlesticks, period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['high', 'low', 'close'])
             # Clean NaN values
             df = dropna(df)
-            adxv = []
-            adx_value = adx(df['high'], df['low'], df['close'], window=int(period))
-            adx_value = adx_value.dropna()
-            for v in adx_value:
-                adxv.append(v)
-            return adxv
+            # Calculate the RSI values
+            adx = ADXIndicator(df['high'], df['low'], df['close'], window=int(period))
+            return f' Current Average Directional Movement Index Value: {adx.adx().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -198,16 +172,11 @@ class Indicators():
     # Accumulation/Distribution Index (ADI)
     def adi(candlesticks):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['high', 'low', 'close', 'tickVolume'])
             # Clean NaN values
             df = dropna(df)
-            adiv = []
-            adi_value = acc_dist_index(
-                df['high'], df['low'], df['close'], df['tickVolume'])
-            adi_value = adi_value.dropna()
-            for v in adi_value:
-                adiv.append(v)
-            return adiv
+            adi = AccDistIndexIndicator(df['high'], df['low'], df['close'], volume=df['tickVolume'])
+            return f'Current Accumulation/Distribution Index: {adi.acc_dist_index().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -220,22 +189,18 @@ class Indicators():
         retracements = []
         for level in levels:
             retracements.append(high - level * diff)
-        return retracements
+        return f'Current Fibonacci Retracements are: {retracements}'
 
-     # Stochastic Oscillator
+    # Stochastic Oscillator
     def stochastic_oscillator(candlesticks, period, smooth_period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['high', 'low', 'close'])
             # Clean NaN values
             df = dropna(df)
-            stoch = []
-            stoch_value = stoch_signal(
+            # Calculate the RSI values
+            stotch = StochasticOscillator(
                 df['high'], df['low'], df['close'], window=int(period), smooth_window=int(smooth_period))
-            stoch_value = pd.DataFrame(stoch_value)
-            stoch_value = stoch_value.dropna()
-            for v in stoch_value:
-                stoch.append(v)
-            return stoch
+            return f'Current Stochastic Oscillator value is: {stotch.stoch().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
@@ -243,17 +208,12 @@ class Indicators():
     # True Strength Index
     def tsi(candlesticks, slow_period, fast_period):
         if candlesticks:
-            df = pd.DataFrame(candlesticks)
+            df = pd.DataFrame(candlesticks, columns=['close'])
             # Clean NaN values
             df = dropna(df)
-            tsiv = []
-            tsi_value = tsi(
-                df['close'], window_slow=int(slow_period), window_fast=int(fast_period))
-            tsi_value = pd.DataFrame(tsi_value)
-            tsi_value = tsi_value.dropna()
-            for v in tsi_value:
-                tsiv.append(v)
-            return tsiv
+            # Calculate the RSI values
+            tsi = TSIIndicator(df['close'], window_slow=int(slow_period), window_fast=int(fast_period))
+            return f'Current True Strength Index value is: {tsi.tsi().iloc()[-1]}'
 
         if not candlesticks:
             return f'Failed to get candlesticks'
