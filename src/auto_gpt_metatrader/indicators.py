@@ -77,7 +77,7 @@ class Indicators():
             # Clean NaN values
             df = dropna(df)
             
-            mfi = MFIIndicator(df['high'], df['low'], df['close'], volume=df['tickVolume'], window=int(20))
+            mfi = MFIIndicator(df['high'], df['low'], df['close'], volume=df['tickVolume'], window=int(period))
             return f'Current MFI Value: {mfi.money_flow_index().iloc()[-1]}'
         else:
             return f'Failed to get candlesticks'
