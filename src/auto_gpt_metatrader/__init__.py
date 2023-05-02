@@ -422,7 +422,6 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         return data
 
     # Indicators
-    indicators = Indicators()
     def money_flow_index(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
         candlesticks = Indicators.fetch(symbol, timeframe)
         data = Indicators.money_flow_index(candlesticks, period)
