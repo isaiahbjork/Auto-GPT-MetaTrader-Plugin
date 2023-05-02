@@ -140,6 +140,7 @@ class Trading():
     def place_trade(symbol, volume, signal) -> None:
         signal = signal.upper()
         symbol = symbol.upper()
+        symbol = symbol.replace('/', '')
         # Place the new trade
         if signal == 'BUY':
             trade_data = {
