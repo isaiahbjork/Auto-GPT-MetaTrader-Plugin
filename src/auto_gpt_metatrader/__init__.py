@@ -464,7 +464,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         return data
 
     def stochastic_oscillator(self, symbol: str, timeframe: str, period: int = 14, smooth_period: int = 3) -> Optional[float]:
-        data = Indicators.stochastic_oscillator(symbol, timeframe, period)
+        data = Indicators.stochastic_oscillator(symbol, timeframe, period, smooth_period)
         return data
 
     def tsi(self, symbol: str, timeframe: str, slow_period: int = 25, fast_period: int = 13) -> Optional[float]:
