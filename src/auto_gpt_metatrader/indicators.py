@@ -213,6 +213,8 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     def fib_retracements(candlesticks, high, low):
+        high = float(high)
+        low = float(low)
         levels = [0.236, 0.382, 0.5, 0.618, 0.786]
         diff = high - low
         retracements = []
