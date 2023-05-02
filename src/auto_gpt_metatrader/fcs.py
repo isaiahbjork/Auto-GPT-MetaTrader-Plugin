@@ -4,7 +4,7 @@ import os
 fcs_api = os.getenv('FCS_API_KEY')
 
 class Fcs():
-    def get_important_forex_news(self) -> str:
+    def get_important_forex_news() -> str:
             url = 'https://fcsapi.com/api-v3/forex/economy_cal'
             params = {
                 'access_key': fcs_api

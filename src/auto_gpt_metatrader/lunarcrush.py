@@ -4,7 +4,7 @@ import os
 lunarcrush_api = os.getenv('LUNAR_CRUSH_API_KEY')
 
 class LunarCrush():
-    def get_stock_of_the_day(self) -> float:
+    def get_stock_of_the_day() -> float:
         url = "https://lunarcrush.com/api3/stockoftheday"
         headers = {
             'Authorization': f'Bearer {lunarcrush_api}'
