@@ -7,21 +7,18 @@ import requests
 import os
 import numpy as np
 import ta
-import myfxbook
+from myfxbook import myfxbook
 import pandas as pd
-from ta.utils import dropna
-from ta.momentum import rsi, stoch_signal, tsi
-from ta.trend import sma_indicator, ema_indicator, wma_indicator, macd_signal, adx
-from ta.volume import acc_dist_index, money_flow_index
+from .indicators import Indicators
+from .fcs import Fcs
+from .lunarcrush import LunarCrush
+from .trading import Trading
+
 PromptGenerator = TypeVar("PromptGenerator")
 
-account_id = os.getenv('META_API_ACCOUNT_ID')
-token = os.getenv("META_API_TOKEN")
-region = os.getenv("META_API_REGION")
-lunarcrush_api = os.getenv('LUNAR_CRUSH_API_KEY')
+
 myfxbook_username = os.getenv('MY_FX_BOOK_USERNAME')
 myfxbook_password = os.getenv('MY_FX_BOOK_PASSWORD')
-fcs_api = os.getenv('FCS_API_KEY')
 
 
 class Message(TypedDict):
@@ -39,6 +36,11 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         self._name = "Auto-GPT-MetaTrader"
         self._version = "0.1.0"
         self._description = "This is a plugin for Auto-GPT-MetaTrader."
+        self.fx = myfxbook.myfxbook(myfxbook_username, myfxbook_password)
+
+        def login():
+            self.fx.login()
+        login()
 
     def post_prompt(self, prompt: PromptGenerator) -> PromptGenerator:
         prompt.add_command(
@@ -222,6 +224,14 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
             {},
             self.get_important_forex_news
         ),
+        # prompt.add_command(
+        #     "Get Sentiment",
+        #     "get_sentiment",
+        #     {
+        #         "symbol": "<symbol>"
+        #     },
+        #     self.get_sentiment
+        # ),
         return prompt
 
     def can_handle_post_prompt(self) -> bool:
@@ -388,409 +398,98 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         pass
 
     def fetch_candlesticks(self, symbol: str, timeframe: str) -> Optional[Dict[str, Any]]:
-        symbol = symbol.replace('/', '')
-        symbol = symbol.upper()
-        timeframe_map = {
-            "1 minute": "1m",
-            "1 min": "1m",
-            "1min": "1m",
-            "5 minutes": "5m",
-            "5 min": "5m",
-            "5min": "5m",
-            "15 minutes": "15m",
-            "15 min": "15m",
-            "15min": "15m",
-            "30 minutes": "30m",
-            "30 min": "30m",
-            "30min": "30m",
-            "1 hour": "1h",
-            "4 hours": "4h",
-            "1 day": "1d",
-            "1 week": "1w",
-            "1 month": "1m"
-        }
-        # Check if the user input matches any of the keys in the dictionary
-        if timeframe in timeframe_map:
-            timeframe = timeframe_map[timeframe]
-        else:
-            # Assume that the user input is already in the correct format
-            pass
-
-        url = f"https://mt-market-data-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=15"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        response = requests.get(url, headers=headers)
-        if response:
-            candlesticks = response.json()
-            return candlesticks
-        else:
-            return 'Failed to get candlesticks.'
-
-    def fetch(self, symbol, timeframe):
-        symbol = symbol.replace('/', '')
-        symbol = symbol.upper()
-        timeframe_map = {
-            "1 minute": "1m",
-            "1 min": "1m",
-            "1min": "1m",
-            "M1": "1m",
-            "5 minutes": "5m",
-            "5 min": "5m",
-            "5min": "5m",
-            "M5": "1m",
-            "15 minutes": "15m",
-            "15 min": "15m",
-            "15min": "15m",
-            "M15": "15m",
-            "30 minutes": "30m",
-            "30 min": "30m",
-            "30min": "30m",
-            "M30": "30m",
-            "1 hour": "1h",
-            "1hour": "1h",
-            "1hr": "1h",
-            "H1": "1h",
-            "4 hours": "4h",
-            "4hours": "4h",
-            "4 hrs": "4h",
-            "H4": "4h",
-            "1 day": "1d",
-            "1day": "1d",
-            "D1": "1d",
-            "1 week": "1w",
-            "1week": "1w",
-            "W1": "1w",
-            "1 month": "1mn",
-            "1month": "1mn",
-            "M1": "1mn"
-
-        }
-        # Check if the user input matches any of the keys in the dictionary
-        if timeframe in timeframe_map:
-            timeframe = timeframe_map[timeframe]
-        else:
-            # Assume that the user input is already in the correct format
-            pass
-
-        url = f"https://mt-market-data-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/historical-market-data/symbols/{symbol}/timeframes/{timeframe}/candles?limit=100"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        response = requests.get(url, headers=headers)
-        if response:
-            candlesticks = response.json()
-            return candlesticks
-        else:
-            return 'Failed to get candlesticks.'
+        data = Trading.fetch_candlesticks(symbol, timeframe)
+        return data
 
     def close_trade(self, position_id: str) -> None:
-        trade_data = {
-            'actionType': 'POSITION_CLOSE_ID',
-            'positionId': position_id
-        }
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        url = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
-        response = requests.post(
-            url, headers=headers, json=trade_data)
-        response = response.json()
-        return response
+        data = Trading.close_trade(position_id)
+        return data
 
     def close_all_trades(self) -> Optional[Dict[str, Any]]:
-        url2 = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        positions = requests.get(url2, headers=headers)
-        positions = positions.json()
-        responses = []
-        for position in positions:
-            trade_data = {
-                'actionType': 'POSITION_CLOSE_ID',
-                'positionId': position['id']
-            }
-            url = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
-            response = requests.post(
-                url, headers=headers, json=trade_data)
-            if response:
-                print(f"Successfully closed trade for {position['symbol']}")
-            else:
-                print(f"Failed to close trade for {position['symbol']}")
-            if response:
-                responses.append(f"Successfully closed trade for {position['symbol']}")
-            else:
-                responses.append(f"Failed to close trade for {position['symbol']}")
-
-        if responses:
-            return responses
-        else:
-            return f'No trades to close.'
+        data = Trading.close_all_trades()
+        return data
 
     def get_positions(self) -> Optional[Dict[str, Any]]:
-        url2 = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        positions = requests.get(url2, headers=headers)
-        if positions:
-            positions = positions.json()
-            return positions
-        else:
-            return f'Failed to get positions'
+        data = Trading.get_positions()
+        return data
 
     def get_account_information(self) -> Optional[Dict[str, Any]]:
-        url = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/account-information"
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        response = requests.get(url, headers=headers)
-        if response:
-            response = response.json()
-            return response
-        else:
-            return f'Failed to get account information'
+        data = Trading.get_account_information()
+        return data
 
     def place_trade(self, symbol: str, volume: str, signal: str) -> None:
-        signal = signal.upper()
-        symbol = symbol.upper()
-        # Place the new trade
-        trade_data = {
-            'symbol': symbol,
-            'actionType': 'ORDER_TYPE_BUY' if signal == 'BUY' else 'ORDER_TYPE_SELL',
-            'volume': float(volume),
-            'comment': 'Auto-GPT MetaTrader Plugin'
-        }
-        headers = {
-            "auth-token": token,
-            "Content-Type": "application/json"
-        }
-        url = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/trade"
-        response = requests.post(url, headers=headers, json=trade_data)
-        if response:
-            response = response.json()
-            return response
-        else:
-            response = response.json()
-            return response
+        data = Trading.place_trade(symbol, volume, signal)
+        return data
 
     # Indicators
-
     def money_flow_index(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            mfi_value = money_flow_index(
-                df['high'], df['low'], df['close'], df['tickVolume'], window=int(period))
-            mfi_value = pd.DataFrame(mfi_value)
-            mfiv = mfi_value.dropna()
-            return mfiv.to_json()
-
-        if not candlesticks:
-            return f'Failed to get candlesticks'
+        data = Indicators.money_flow_index(symbol, timeframe, period)
+        return data
 
     def volume(self, symbol: str, timeframe: str) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            volumes = [float(candlestick['tickVolume']) for candlestick in candlesticks]
-            return np.sum(volumes[-14:])
-        else:
-            return f'Failed to get candlesticks'
+        data = Indicators.volume(symbol, timeframe)
+        return data
 
     def rsi(self, symbol: str, timeframe: str, period: float = 14) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            rsi_value = rsi(df['close'], window=int(period))
-            rsi_value = pd.DataFrame(rsi_value)
-            rsiv = rsi_value.dropna()
-            return rsiv.to_json()
-
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Simple Moving Average (SMA)
+        data = Indicators.rsi(symbol, timeframe, period)
+        return data
 
     def sma(self, symbol: str, timeframe: str, period: int = 12) -> Optional[float]:
-        # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            sma_value = sma_indicator(df['close'], window=int(period))
-            sma_value = pd.DataFrame(sma_value)
-            smav = sma_value.dropna()
-            return smav.to_json()
+        data = Indicators.sma(symbol, timeframe, period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Exponential Moving Average (EMA)
     def ema(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
-        # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            ema_value = ema_indicator(df['close'], window=int(period))
-            ema_value = pd.DataFrame(ema_value)
-            emav = ema_value.dropna()
-            return emav.to_json()
+        data = Indicators.ema(symbol, timeframe, period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Weighted Moving Average (WMA)
     def wma(self, symbol: str, timeframe: str, period: int = 9) -> Optional[float]:
-        # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            wma_value = wma_indicator(df['close'], window=int(period))
-            wma_value = pd.DataFrame(wma_value)
-            wmav = wma_value.dropna()
-            return wmav.to_json()
+        data = Indicators.wma(symbol, timeframe, period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Moving Average Convergence Divergence (MACD)
     def macd(self, symbol: str, timeframe: str, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Optional[Tuple[float, float, float]]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            macd_value = macd_signal(df['close'], window_slow=int(
-                slow_period), window_fast=int(fast_period), window_sign=int(signal_period))
-            macd_value = pd.DataFrame(macd_value)
-            macdv = macd_value.dropna()
-            return macdv.to_json()
+        data = Indicators.macd(symbol, timeframe, fast_period,
+                               slow_period, signal_period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Average Directional Movement Index (ADX)
     def adx(self, symbol: str, timeframe: str, period: str = 20) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            adx_value = adx(df['high'], df['low'], df['close'], window=int(period))
-            adx_value = pd.DataFrame(adx_value)
-            adxv = adx_value.dropna()
-            return adxv.to_json()
+        data = Indicators.adx(symbol, timeframe, period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # Accumulation/Distribution Index (ADI)
     def adi(self, symbol: str, timeframe: str) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            adi_value = acc_dist_index(
-                df['high'], df['low'], df['close'], df['tickVolume'])
-            adi_value = pd.DataFrame(adi_value)
-            adiv = adi_value.dropna()
-            return adiv.to_json()
-
-        if not candlesticks:
-            return f'Failed to get candlesticks'
+        data = Indicators.adi(symbol, timeframe)
+        return data
 
     def fib_retracements(self, high: float, low: float) -> List[float]:
-        levels = [0.236, 0.382, 0.5, 0.618, 0.786]
-        diff = high - low
-        retracements = []
-        for level in levels:
-            retracements.append(high - level * diff)
-        return retracements
+        data = Indicators.fib_retracements(high, low)
+        return data
 
-     # Stochastic Oscillator
     def stochastic_oscillator(self, symbol: str, timeframe: str, period: int = 14, smooth_period: int = 3) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            stoch_value = stoch_signal(
-                df['high'], df['low'], df['close'], window=int(period), smooth_window=int(smooth_period))
-            stoch_value = pd.DataFrame(stoch_value)
-            stochv = stoch_value.dropna()
-            return stochv.to_json()
+        data = Indicators.stochastic_oscillator(symbol, timeframe, period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-
-    # True Strength Index
     def tsi(self, symbol: str, timeframe: str, slow_period: int = 25, fast_period: int = 13) -> Optional[float]:
-        candlesticks = self.fetch(symbol, timeframe)
-        if candlesticks:
-            df = pd.DataFrame(candlesticks)
-            # Clean NaN values
-            df = dropna(df)
-            tsi_value = tsi(
-                df['close'], window_slow=int(slow_period), window_fast=int(fast_period))
-            tsi_value = pd.DataFrame(tsi_value)
-            tsiv = tsi_value.dropna()
-            return tsiv.to_json()
+        data = Indicators.tsi(symbol, timeframe, slow_period, fast_period)
+        return data
 
-        if not candlesticks:
-            return f'Failed to get candlesticks'
-        
     # LunarCrush
-
     def get_stock_of_the_day(self) -> float:
-
-        url = "https://lunarcrush.com/api3/stockoftheday"
-        headers = {
-            'Authorization': f'Bearer {lunarcrush_api}'
-        }
-
-        response = requests.request("GET", url, headers=headers)
-
-        if response.status_code == 200:
-            return response.text.encode('utf8')
-        else:
-            raise Exception(
-                f"Failed to get Stock of the day from LunarCrush; status code {response.status_code}")
+        data = LunarCrush.get_stock_of_the_day()
+        return data
 
     # FCS API
     def get_important_forex_news(self) -> str:
-        url = 'https://fcsapi.com/api-v3/forex/economy_cal'
-        params = {
-            'access_key': fcs_api
-        }
+        data = Fcs.get_important_forex_news()
+        return data
 
-        try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()  # Raise an exception if the response status is not OK (2xx)
-
-            json_data = response.json()
-            important_events = []
-            for item in json_data['response']:
-                if item['importance'] == '2':
-                    important_events.append(item)
-            return important_events
-
-        except requests.exceptions.RequestException as e:
-            print('Error fetching data from FCS API:', e)
-            return None
+    # MyFxBook
+    # def get_sentiment(self, symbol: str) -> str:
+    #     data = self.fx.get_community_outlook()
+    #     symbol = symbol.replace('/', '')
+    #     symbol = symbol.upper()
+    #     for d in data["symbols"]:
+    #         if d["name"] == symbol:
+    #             short_percentage = d["shortPercentage"]
+    #             long_percentage = d["longPercentage"]
+    #             return f"Shorts: {short_percentage}%, Longs: {long_percentage}%"
+    #     # Symbol name not found in data
+    #     return f'Symbol Not Found'

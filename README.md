@@ -20,6 +20,7 @@ Crypto Donations: 0x2457e8746EFa5894b70aE06a1b391474bc928B05
 - 🕯 **Candlestick Data**
 - 📈 **Stock of The Day**
 - 📂 **Red Folder News**
+- ％ **Community Sentiment** (In-Progress)
 
 ## 🔧 Installation
 
