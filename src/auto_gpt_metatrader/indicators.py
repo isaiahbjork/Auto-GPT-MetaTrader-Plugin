@@ -88,7 +88,7 @@ class Indicators():
         if not candlesticks:
             return f'Failed to get candlesticks'
 
-    def volume(candlesticks, symbol, timeframe):
+    def volume(candlesticks):
         if candlesticks:
             volumes = [float(candlestick['tickVolume']) for candlestick in candlesticks]
             return np.sum(volumes[-14:])
