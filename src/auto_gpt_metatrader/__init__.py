@@ -485,12 +485,12 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
 
     # LunarCrush
     def get_stock_of_the_day(self) -> float:
-        data = LunarCrush.get_stock_of_the_day(indicators)
+        data = LunarCrush.get_stock_of_the_day()
         return data
 
     # FCS API
     def get_important_forex_news(self) -> str:
-        data = Fcs.get_important_forex_news(indicators)
+        data = Fcs.get_important_forex_news()
         return data
 
     # MyFxBook
