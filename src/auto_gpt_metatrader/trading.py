@@ -64,7 +64,7 @@ class Trading():
         response = response.json()
         return response
 
-    def close_all_trades(self):
+    def close_all_trades():
         url2 = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
         headers = {
             "auth-token": token,
@@ -95,7 +95,7 @@ class Trading():
         else:
             return f'No trades to close.'
 
-    def get_positions(self):
+    def get_positions():
         url2 = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/positions"
         headers = {
             "auth-token": token,
@@ -108,7 +108,7 @@ class Trading():
         else:
             return f'Failed to get positions'
 
-    def get_account_information(self):
+    def get_account_information():
         url = f"https://mt-client-api-v1.{region}.agiliumtrade.ai/users/current/accounts/{account_id}/account-information"
         headers = {
             "auth-token": token,
