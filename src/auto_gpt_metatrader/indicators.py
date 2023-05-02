@@ -11,8 +11,9 @@ account_id = os.getenv('META_API_ACCOUNT_ID')
 token = os.getenv("META_API_TOKEN")
 region = os.getenv("META_API_REGION")
 
+
 class Indicators():
-    def fetch(self, symbol, timeframe):
+    def fetch(symbol, timeframe):
         symbol = symbol.replace('/', '')
         symbol = symbol.upper()
         timeframe_map = {
@@ -69,9 +70,8 @@ class Indicators():
             return candlesticks
         else:
             return 'Failed to get candlesticks.'
-        
-    def money_flow_index(self, symbol, timeframe, period):
-        candlesticks = self.fetch(symbol, timeframe)
+
+    def money_flow_index(candlesticks, period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -87,17 +87,15 @@ class Indicators():
 
         if not candlesticks:
             return f'Failed to get candlesticks'
-    
-    def volume(self, symbol, timeframe):
-        candlesticks = self.fetch(symbol, timeframe)
+
+    def volume(candlesticks, symbol, timeframe):
         if candlesticks:
             volumes = [float(candlestick['tickVolume']) for candlestick in candlesticks]
             return np.sum(volumes[-14:])
         else:
             return f'Failed to get candlesticks'
 
-    def rsi(self, symbol, timeframe, period):
-        candlesticks = self.fetch(symbol, timeframe)
+    def rsi(candlesticks, period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -114,9 +112,8 @@ class Indicators():
 
     # Simple Moving Average (SMA)
 
-    def sma(self, symbol, timeframe, period):
+    def sma(candlesticks, period):
         # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -132,9 +129,8 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Exponential Moving Average (EMA)
-    def ema(self, symbol, timeframe, period):
+    def ema(candlesticks, period):
         # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -150,9 +146,8 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Weighted Moving Average (WMA)
-    def wma(self, symbol, timeframe, period):
+    def wma(candlesticks, period):
         # Get the candlesticks data
-        candlesticks = self.fetch(symbol, timeframe)
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -168,8 +163,7 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Moving Average Convergence Divergence (MACD)
-    def macd(self, symbol, timeframe, fast_period, slow_period, signal_period):
-        candlesticks = self.fetch(symbol, timeframe)
+    def macd(candlesticks, fast_period, slow_period, signal_period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -186,8 +180,7 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Average Directional Movement Index (ADX)
-    def adx(self, symbol, timeframe, period):
-        candlesticks = self.fetch(symbol, timeframe)
+    def adx(candlesticks, period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -203,8 +196,7 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Accumulation/Distribution Index (ADI)
-    def adi(self, symbol, timeframe):
-        candlesticks = self.fetch(symbol, timeframe)
+    def adi(candlesticks, symbol, timeframe):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -220,7 +212,7 @@ class Indicators():
         if not candlesticks:
             return f'Failed to get candlesticks'
 
-    def fib_retracements(self, high, low):
+    def fib_retracements(candlesticks, high, low):
         levels = [0.236, 0.382, 0.5, 0.618, 0.786]
         diff = high - low
         retracements = []
@@ -229,8 +221,7 @@ class Indicators():
         return retracements
 
      # Stochastic Oscillator
-    def stochastic_oscillator(self, symbol, timeframe, period, smooth_period):
-        candlesticks = self.fetch(symbol, timeframe)
+    def stochastic_oscillator(candlesticks, period, smooth_period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
@@ -248,8 +239,7 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # True Strength Index
-    def tsi(self, symbol, timeframe, slow_period, fast_period):
-        candlesticks = self.fetch(symbol, timeframe)
+    def tsi(candlesticks, slow_period, fast_period):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values

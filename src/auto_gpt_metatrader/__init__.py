@@ -422,63 +422,76 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         return data
 
     # Indicators
+    indicators = Indicators()
     def money_flow_index(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
-        data = Indicators.money_flow_index(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.money_flow_index(candlesticks, period)
         return data
 
     def volume(self, symbol: str, timeframe: str) -> Optional[float]:
-        data = Indicators.volume(symbol, timeframe)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.volume(candlesticks)
         return data
 
     def rsi(self, symbol: str, timeframe: str, period: float = 14) -> Optional[float]:
-        data = Indicators.rsi(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.rsi(candlesticks, period)
         return data
 
     def sma(self, symbol: str, timeframe: str, period: int = 12) -> Optional[float]:
-        data = Indicators.sma(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.sma(candlesticks, period)
         return data
 
     def ema(self, symbol: str, timeframe: str, period: int = 14) -> Optional[float]:
-        data = Indicators.ema(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.ema(candlesticks, period)
         return data
 
     def wma(self, symbol: str, timeframe: str, period: int = 9) -> Optional[float]:
-        data = Indicators.wma(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.wma(candlesticks, period)
         return data
 
     def macd(self, symbol: str, timeframe: str, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Optional[Tuple[float, float, float]]:
-        data = Indicators.macd(symbol, timeframe, fast_period,
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.macd(candlesticks, fast_period,
                                slow_period, signal_period)
         return data
 
     def adx(self, symbol: str, timeframe: str, period: str = 20) -> Optional[float]:
-        data = Indicators.adx(symbol, timeframe, period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.adx(candlesticks, period)
         return data
 
     def adi(self, symbol: str, timeframe: str) -> Optional[float]:
-        data = Indicators.adi(symbol, timeframe)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.adi(candlesticks, symbol, timeframe)
         return data
 
     def fib_retracements(self, high: float, low: float) -> List[float]:
-        data = Indicators.fib_retracements(high, low)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.fib_retracements(candlesticks,high, low)
         return data
 
     def stochastic_oscillator(self, symbol: str, timeframe: str, period: int = 14, smooth_period: int = 3) -> Optional[float]:
-        data = Indicators.stochastic_oscillator(symbol, timeframe, period, smooth_period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.stochastic_oscillator(candlesticks, period, smooth_period)
         return data
 
     def tsi(self, symbol: str, timeframe: str, slow_period: int = 25, fast_period: int = 13) -> Optional[float]:
-        data = Indicators.tsi(symbol, timeframe, slow_period, fast_period)
+        candlesticks = Indicators.fetch(symbol, timeframe)
+        data = Indicators.tsi(candlesticks, slow_period, fast_period)
         return data
 
     # LunarCrush
     def get_stock_of_the_day(self) -> float:
-        data = LunarCrush.get_stock_of_the_day()
+        data = LunarCrush.get_stock_of_the_day(indicators)
         return data
 
     # FCS API
     def get_important_forex_news(self) -> str:
-        data = Fcs.get_important_forex_news()
+        data = Fcs.get_important_forex_news(indicators)
         return data
 
     # MyFxBook
