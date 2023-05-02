@@ -21,7 +21,7 @@ Crypto Donations: 0x2457e8746EFa5894b70aE06a1b391474bc928B05
 - 📈 **Stock of The Day**
 - 📂 **Red Folder News**
 - ％ **Community Sentiment** (In-Progress)
-
+- 📝 **Modify Trades** (In-Progress)
 ## 🔧 Installation
 
 Follow these steps to configure the Auto-GPT MetaTrader Plugin:
