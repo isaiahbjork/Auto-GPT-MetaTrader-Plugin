@@ -468,7 +468,7 @@ class AutoGPTMetaTraderPlugin(AutoGPTPluginTemplate):
         data = Indicators.adi(candlesticks, symbol, timeframe)
         return data
 
-    def fib_retracements(self, high: float, low: float) -> List[float]:
+    def fib_retracements(self, symbol: str, timeframe: str, high: float, low: float) -> List[float]:
         candlesticks = Indicators.fetch(symbol, timeframe)
         data = Indicators.fib_retracements(candlesticks,high, low)
         return data

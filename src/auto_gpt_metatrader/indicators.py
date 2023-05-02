@@ -196,7 +196,7 @@ class Indicators():
             return f'Failed to get candlesticks'
 
     # Accumulation/Distribution Index (ADI)
-    def adi(candlesticks, symbol, timeframe):
+    def adi(candlesticks):
         if candlesticks:
             df = pd.DataFrame(candlesticks)
             # Clean NaN values
