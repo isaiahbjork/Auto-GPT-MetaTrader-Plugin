@@ -1,6 +1,8 @@
 # Auto-GPT MetaTrader Plugin 📈
 The AutoGPT MetaTrader Plugin is a software tool that enables traders to connect their MetaTrader 4 or 5 trading account to Auto-GPT.
 
+[Try MetaTrader GPT on ChatGPT](https://chat.openai.com/g/g-sZE9jEsXA-metatrader-gpt)
+
 [![GitHub Repo stars](https://img.shields.io/github/stars/isaiahbjork/Auto-GPT-MetaTrader-Plugin?style=social)](https://github.com/isaiahbjork/Auto-GPT-MetaTrader-Plugin/stargazers)
 
 <h2 align="center"> 💖 Help Support Auto-GPT Plugin's Development 💖</h2>
